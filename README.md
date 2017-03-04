@@ -1,3 +1,4 @@
+# Maze Generator/Solver
 This program uses the recursive backtracking method of maze generation to generate an n by m maze. The maze is stored in a BitSet to minimize memory usage.
 # To construct a maze:
 Create a Maze object of size 'int width' by 'int height' as such - Maze maze = new Maze('width', 'height');
