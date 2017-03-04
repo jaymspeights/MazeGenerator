@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Stack;
 import javax.imageio.ImageIO;
@@ -15,15 +16,21 @@ public class Maze {
     private int width;
     private int height;
     private BitSet maze;
-    private int[] move;
-    private Stack<Integer> stack;
+    private Stack<Integer> stack = new Stack();
+    private char[] hashKey;
 
+    
+    public Maze(BitSet maze, int width, int height){
+        this.maze = maze;
+        this.width = width;
+        this.height = height;
+    }
+    
     //initializes the maze
     public Maze(int w, int h){
         width = w * 2 + 1;
         height = h * 2 + 1;
         maze = new BitSet(width * height);
-        move = new int[] {1, -1 * width, -1, 1 * width};
 
         int finish = (int)(Math.random() * (width / 2)) * 2 + 1;
         maze.set(width*height - 1 - finish);
@@ -31,51 +38,76 @@ public class Maze {
         int start = (int)(Math.random() * (width / 2)) * 2 + 1;
         maze.set(start);
         maze.set(start + width);
-
-        stack = new Stack();
-
+        
         stack.push(start + width);
     }
 
+    public BitSet getBitSet(){
+        return maze;
+    }
+    
+    public int getWidth(){
+        return width;
+    }
+    
+    public int getHeight(){
+        return height;
+    }
+    
     //takes one step towards converting maze
     //returns true if maze is finished
     //else returns false
     public boolean generate(){
         if (stack.empty()) return true;
-        int count = 0;
+        int m;
         int loc = stack.peek();
-        int dir = (int)(Math.random()*4);
-        while (count < 4){
-            if (loc + 2*move[dir] >= 0 && loc + 2*move[dir] < width * height && ((loc + 2*move[dir])%width == loc%width || (loc + 2*move[dir])/width == loc/width) && !maze.get(loc + 2*move[dir])){
-                maze.set(stack.push(loc + 2*move[dir]));
-                maze.set(loc + move[dir]);
-                return false;
-            }
-            else {
-                count++;
-                dir = (dir+1)%4;
-            }
+        
+        ArrayList<Integer> move = new ArrayList();
+        if (loc - 2 * width >= 0 && !maze.get(loc - 2*width)) move.add(-1 * width);
+        if (loc + 2 * width < width * height && !maze.get(loc + 2*width)) move.add(1 * width);
+        if (loc + 2 < width * height && (loc + 2)/width == loc/width && !maze.get(loc + 2)) move.add(1);
+        if (loc - 2 >= 0 && (loc - 2)/width == loc/width && !maze.get(loc - 2)) move.add(-1);
+
+        if (move.size()>0){
+            m = move.get((int)(Math.random()*move.size()));
+            maze.set(stack.push(loc + 2*m));
+            maze.set(loc + m);
+            return false;
         }
         stack.pop();
         return stack.empty();
     }
 
     //hashes the maze into a string
-    public String hash(){
-        String name = "";
-        String str = "";
-        int num;
-        for (int i = width + 1; i < width * height; i++){
-            if (maze.get(i)) str+='1';
-            else str+='0';
-            num = Integer.parseInt(str) - i%width;
-            if ((num >= 65 && num <= 90) || (num >= 97 && num <= 122)) {
-               name += (char)num;
-               str = "";
-            }
-            else if (num > 122) str = "";
+    public String stringify(){
+        
+        hashKey = new char[64];
+        for (int i = 0; i < 26; i++){
+            hashKey[i] = (char)(i + 65);
         }
-        return name;
+        hashKey[26] = '_';
+        hashKey[27] = '.';
+        for (int i = 28; i < 54; i++){
+            hashKey[i] = (char)(i + 69);
+        }
+        for (int i = 54; i < 64; i++){
+            hashKey[i] = (char)(i - 6);
+        }
+        
+        String hash = "";
+        String str = "";
+        for (int i = 0; i < height; i++){
+            for (int j = (i%2) + 1; j < width - 1; j+=2){
+                if (maze.get(i*height+j)) str+='1';
+                else str+='0';
+                if (str.length() == 6){
+                    hash += hashKey[Integer.parseInt(str, 2)];
+                    str = "";
+                }  
+            }  
+        }
+        hash += hashKey[Integer.parseInt(str, 2)];
+        return hash;
     }
 
     //returns a string representation of the maze
