@@ -18,7 +18,7 @@ Call MazeSolver.solve(). This takes one step towards solving, and returns true i
 
 You can solve the entirety using the following - while (!ms.solve());
 
-To print the path through the maze, create a new maze object using the BitSet from the MazeSolver,
+To print the path through the maze, create a new maze object using the BitSet from the MazeSolver,and print that as such - 
 
-and print that as such - System.out.println(new Maze(ms.getBitSet()));
+System.out.println(new Maze(ms.getBitSet()));
 
