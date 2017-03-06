@@ -11,13 +11,14 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
     MazeSolver ms;
     BitSet bs;
     Thread thread;
-    int height = 20;
-    int width = 35;
-    int scale = 20;
+    int height = 50;
+    int width = 20;
+    int scale = 8;
     int w = width*2+1;
     int h = height*2+1;
     int count = 0;
     boolean solved;
+    int reprint = 0;
     
     Graphics bufferOS;
     Graphics bufferMS;
@@ -41,12 +42,12 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
 
     @Override
     public void run() {
-        while (!m.generate()){
+        while (!m._generate()){
             count++;
             bs = m.getBitSet();
             repaint();
             try {
-                thread.sleep(10,0);
+                thread.sleep(6,0);
             } catch (InterruptedException ex) {
                 System.out.println(ex);
             }
@@ -61,7 +62,7 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
             }
             repaint();
             try {
-                thread.sleep(10,0);
+                thread.sleep(6,0);
             } catch (InterruptedException ex) {
                 System.out.println(ex);
             }
@@ -119,4 +120,5 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
             g.drawImage(offscreen, 0, 0, this);
         }
     }
+    
 }
