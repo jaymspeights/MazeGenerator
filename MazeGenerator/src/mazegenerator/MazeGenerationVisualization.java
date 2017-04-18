@@ -5,20 +5,24 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.BitSet;
+import mazegenerator.DijkstraSolve.Node;
 
 public class MazeGenerationVisualization extends Applet implements Runnable{
     Maze m;
     MazeSolver ms;
+    DijkstraSolve ds;
     BitSet bs;
     Thread thread;
-    int height = 50;
-    int width = 20;
-    int scale = 8;
+    int height = 10;
+    int width = 10;
+    int scale = 25;
     int w = width*2+1;
     int h = height*2+1;
     int count = 0;
     boolean solved;
     int reprint = 0;
+    
+    
     
     Graphics bufferOS;
     Graphics bufferMS;
@@ -42,34 +46,44 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
 
     @Override
     public void run() {
-        while (!m._generate()){
+        m._init_(1);
+        while (!m._generate_()){
             count++;
             bs = m.getBitSet();
             repaint();
             try {
-                thread.sleep(6,0);
+                thread.sleep(1,0);
             } catch (InterruptedException ex) {
                 System.out.println(ex);
             }
         }
+        m.cycle(6);
+        bs = m.getBitSet();
+        repaint();
         ms = new MazeSolver(m);
         solved = true;
         System.out.println("Solving");
         while (!ms.solve()){
-            count++;
-            if (ms.isSolved()){
-                bs = ms.getBitSet();
-            }
-            repaint();
-            try {
-                thread.sleep(6,0);
-            } catch (InterruptedException ex) {
-                System.out.println(ex);
-            }
+//            count++;
+//            if (ms.isSolved()){
+//                bs = ms.getBitSet();
+//            }
+//            repaint();
+//            try {
+//                thread.sleep(1,0);
+//            } catch (InterruptedException ex) {
+//                System.out.println(ex);
+//            }
         }
         bs = ms.getBitSet();
         repaint();
+        ds = new DijkstraSolve(m.getBitSet(),m.getWidth(),m.getHeight());
+        ds.solve();
+        while(!ds.isDone());
+        repaint();
         kill();
+        System.out.println("Random search length: " + ms.length + 
+                "\nDijkstra search length: " + ds.length);
     }
     
     public void kill(){
@@ -84,7 +98,6 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
     
     @Override
     public void paint(Graphics g){
-        g.setColor(Color.red);
         if (solved && ms.isSolved()){
             bufferMS.setColor(Color.black);
             bufferMS.clearRect(0, 0, w*scale, h*scale);
@@ -99,6 +112,28 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
                 }
             }
             g.drawImage(mazescreen, 0, 0, this);  
+        }
+        if (solved && ms.solved){
+            bufferMS.setColor(Color.red);
+            bufferMS.clearRect(0, 0, w*scale, h*scale);
+            bufferMS.drawString(""+count, 0, scale * h + 10);
+            bufferMS.drawImage(offscreen, 0, 0, this); 
+            bufferMS.setColor(Color.yellow);
+            bufferMS.drawImage(offscreen, 0, 0, this);
+            for (int i = 0; i < h; i++){
+                for (int j = 0; j < w; j++){
+                    if (bs.get(i * w + j)){
+                        bufferMS.fillRect(j * scale, i * scale, scale, scale);
+                    }
+                }
+            }
+            if (ds != null && ds.isDone()){
+                bufferMS.setColor(Color.red);
+                for (Node n:ds.getNodes()){
+                    bufferMS.fillRect((n.loc%w) * scale, scale * (n.loc/w), scale, scale);
+                }
+            }
+            g.drawImage(mazescreen, 0, 0, this);
         }
         else{
             bufferOS.clearRect(0, 0, w*scale, h*scale + 10);

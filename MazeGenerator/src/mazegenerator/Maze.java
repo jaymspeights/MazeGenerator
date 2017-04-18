@@ -17,8 +17,10 @@ public class Maze {
     private int height;
     private BitSet maze;
     private Stack<Integer> stack = new Stack();
+    private ArrayList<Stack<Integer>> stackList;
     private char[] hashKey;
     private int finish;
+    private int start;
     private int count = 0;
 
     
@@ -29,6 +31,7 @@ public class Maze {
     }
     
     //initializes the maze
+    //in bitset, true = path && false = wall
     public Maze(int w, int h){
         width = w * 2 + 1;
         height = h * 2 + 1;
@@ -38,7 +41,7 @@ public class Maze {
         maze.set(width*height - 1 - finish);
         finish = width*height - 1 - finish - width;
         
-        int start = (int)(Math.random() * (width / 2)) * 2 + 1;
+        start = (int)(Math.random() * (width / 2)) * 2 + 1;
         maze.set(start);
         maze.set(start + width);
         
@@ -119,6 +122,76 @@ public class Maze {
             
         stack.pop();
         return stack.empty();
+    }
+    
+    
+    //num must be greater than 0
+    public void _init_(int num){
+        stackList = new ArrayList();
+        for (int i = 0; i < num; i++){
+            stackList.add(new Stack<>());
+        }
+        while(stack.size() < stackList.size())
+            generate();
+        for (int i = 0; i < num; i++){
+            stackList.get(i).push(stack.pop());
+        }
+    }
+    
+    //takes one step towards generating maze
+    //returns true if maze is finished
+    //else returns false
+    //
+    //
+    public boolean _generate_(){
+        for (int i = 0; i < stackList.size(); i++){
+            if (stackList.get(i).isEmpty()){
+                for (int j = 1; i <= stackList.size(); j++){
+                    if (stackList.get((i+j)%stackList.size()).isEmpty()) {
+                        if (j==stackList.size()){
+                            return true;
+                        }
+                        continue;
+                    }
+                    stackList.get(i).push(stackList.get((i+j)%stackList.size()).pop());
+                    break;
+                }
+            }
+                    
+            
+            int m;
+            int loc = stackList.get(i).peek();
+
+            ArrayList<Integer> move = new ArrayList();
+            if (loc - 2 * width >= 0 && !maze.get(loc - 2*width)) move.add(-1 * width);
+            if (loc + 2 * width < width * height && !maze.get(loc + 2*width)) move.add(1 * width);
+            if (loc + 2 < width * height && (loc + 2)/width == loc/width && !maze.get(loc + 2)) move.add(1);
+            if (loc - 2 >= 0 && (loc - 2)/width == loc/width && !maze.get(loc - 2)) move.add(-1);
+
+            if (move.size()>0){
+                m = move.get((int)(Math.random()*move.size()));
+                maze.set(stackList.get(i).push(loc + 2*m));
+                maze.set(loc + m);
+            }
+            else{
+                stackList.get(i).pop();
+                i--;
+            }
+        }
+        return false;
+    }
+    
+    public void cycle(int count){
+        while (count > 0){
+            int row = (int)(Math.random()*(height/2))*2+1;
+            for (int i = (int)(Math.random()*(width-3)); i < width-3; i++){
+                if (maze.get(i + row*width) && !maze.get(i + 1 + row*width) && maze.get(i + 2 + row*width)){
+                    maze.set(i + 1 + row*width);
+                    count -= 1;
+                    break;
+                }
+            }
+        }
     }
 
     //hashes the maze into a string

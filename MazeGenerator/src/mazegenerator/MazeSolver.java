@@ -16,6 +16,7 @@ public class MazeSolver {
     int loc;
     int start;
     Maze maze;
+    int length = 1;
     
     public MazeSolver(Maze m){
         maze = m;
@@ -82,7 +83,8 @@ public class MazeSolver {
             stack.pop();
             return stack.empty();
         }
-        else{           
+        else{  
+            length+=2;
             loc = stack.pop();
             int split = (loc - previous) / 2;
             visitBS.set(previous + split);
