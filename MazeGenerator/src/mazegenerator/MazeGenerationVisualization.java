@@ -13,8 +13,8 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
     DijkstraSolve ds;
     BitSet bs;
     Thread thread;
-    int height = 10;
-    int width = 10;
+    int height = 12;
+    int width = 12;
     int scale = 25;
     int w = width*2+1;
     int h = height*2+1;
@@ -46,13 +46,13 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
 
     @Override
     public void run() {
-        m._init_(1);
+        m._init_(3);
         while (!m._generate_()){
             count++;
             bs = m.getBitSet();
             repaint();
             try {
-                thread.sleep(1,0);
+                thread.sleep(60,0);
             } catch (InterruptedException ex) {
                 System.out.println(ex);
             }
@@ -60,30 +60,13 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
         m.cycle(6);
         bs = m.getBitSet();
         repaint();
-        ms = new MazeSolver(m);
-        solved = true;
         System.out.println("Solving");
-        while (!ms.solve()){
-//            count++;
-//            if (ms.isSolved()){
-//                bs = ms.getBitSet();
-//            }
-//            repaint();
-//            try {
-//                thread.sleep(1,0);
-//            } catch (InterruptedException ex) {
-//                System.out.println(ex);
-//            }
-        }
-        bs = ms.getBitSet();
-        repaint();
         ds = new DijkstraSolve(m.getBitSet(),m.getWidth(),m.getHeight());
         ds.solve();
         while(!ds.isDone());
+        solved = true;
         repaint();
         kill();
-        System.out.println("Random search length: " + ms.length + 
-                "\nDijkstra search length: " + ds.length);
     }
     
     public void kill(){
@@ -98,35 +81,12 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
     
     @Override
     public void paint(Graphics g){
-        if (solved && ms.isSolved()){
-            bufferMS.setColor(Color.black);
-            bufferMS.clearRect(0, 0, w*scale, h*scale);
-            bufferMS.drawString(""+count, 0, scale * h + 10);
-            bufferMS.setColor(Color.yellow);
-            bufferMS.drawImage(offscreen, 0, 0, this);
-            for (int i = 0; i < h; i++){
-                for (int j = 0; j < w; j++){
-                    if (bs.get(i * w + j)){
-                        bufferMS.fillRect(j * scale, i * scale, scale, scale);
-                    }
-                }
-            }
-            g.drawImage(mazescreen, 0, 0, this);  
-        }
-        if (solved && ms.solved){
+        if (solved){
             bufferMS.setColor(Color.red);
             bufferMS.clearRect(0, 0, w*scale, h*scale);
             bufferMS.drawString(""+count, 0, scale * h + 10);
             bufferMS.drawImage(offscreen, 0, 0, this); 
-            bufferMS.setColor(Color.yellow);
             bufferMS.drawImage(offscreen, 0, 0, this);
-            for (int i = 0; i < h; i++){
-                for (int j = 0; j < w; j++){
-                    if (bs.get(i * w + j)){
-                        bufferMS.fillRect(j * scale, i * scale, scale, scale);
-                    }
-                }
-            }
             if (ds != null && ds.isDone()){
                 bufferMS.setColor(Color.red);
                 for (Node n:ds.getNodes()){
@@ -144,13 +104,6 @@ public class MazeGenerationVisualization extends Applet implements Runnable{
                         bufferOS.fillRect(j * scale, i * scale, scale, scale);
                     }
                 }
-            }
-            if (solved){
-                bufferOS.setColor(Color.red);
-                int x = (ms.getLoc()%w) * scale;
-                int y = (ms.getLoc()/w) * scale; 
-                bufferOS.fillRect(x, y, scale, scale); 
-                bufferOS.setColor(Color.black);
             }
             g.drawImage(offscreen, 0, 0, this);
         }
