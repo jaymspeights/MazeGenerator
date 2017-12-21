@@ -121,37 +121,6 @@ public class Maze {
         return stack.empty();
     }
 
-    //hashes the maze into a string
-    public String stringify(){
-        
-        hashKey = new char[64];
-        for (int i = 0; i < 26; i++){
-            hashKey[i] = (char)(i + 65);
-        }
-        hashKey[26] = '_';
-        hashKey[27] = '.';
-        for (int i = 28; i < 54; i++){
-            hashKey[i] = (char)(i + 69);
-        }
-        for (int i = 54; i < 64; i++){
-            hashKey[i] = (char)(i - 6);
-        }
-        
-        String hash = "";
-        String str = "";
-        for (int i = 0; i < height; i++){
-            for (int j = (i%2) + 1; j < width - 1; j+=2){
-                if (maze.get(i*height+j)) str+='1';
-                else str+='0';
-                if (str.length() == 6){
-                    hash += hashKey[Integer.parseInt(str, 2)];
-                    str = "";
-                }  
-            }  
-        }
-        hash += hashKey[Integer.parseInt(str, 2)];
-        return hash;
-    }
 
     //returns a string representation of the maze
     //1 represents path and 0 represents wall
